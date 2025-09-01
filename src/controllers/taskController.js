@@ -13,28 +13,41 @@ export const createTask = async (req, res) => {
 
 export const getTasks = async (req, res) => {
   try {
-    const { page, limit, status, priority, assignee_id, type } = req.query;
-    const filters = { status, priority, assignee_id, type };
-    const pagination = { 
-      page: page ? parseInt(page) : 1, 
-      limit: limit ? parseInt(limit) : 10 
+    {console.log("query" , req.query)};
+    const { page, limit, status, priority, type } = req.query;
+    const filters = { status, priority, type };
+    const pagination = {
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 10
     };
-    
+
     const result = await taskService.getAllTasks(filters, pagination);
     res.json({
-      tasks: result.rows,
-      pagination: {
-        currentPage: pagination.page,
-        totalPages: Math.ceil(result.count / pagination.limit),
-        totalItems: result.count,
-        itemsPerPage: pagination.limit
-      }
+      tasks: result.tasks,
+      pagination: result.pagination,
     });
   } catch (err) {
     console.error("Error fetching tasks:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getTaskDetails = async (req, res) => {
+  try {
+    const { taskId } = req.params; 
+    if (!taskId) {
+      return res.status(400).json({ error: "Task ID is required" });
+    }
+
+    const details = await taskService.getTaskDetails(taskId);
+
+    res.json(details); 
+  } catch (err) {
+    console.error("Error fetching task details:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 
 export const getTaskById = async (req, res) => {
   try {
@@ -85,11 +98,11 @@ export const getTaskStatuses = async (req, res) => {
   try {
     const { page, limit, type } = req.query;
     const filters = { type };
-    const pagination = { 
-      page: page ? parseInt(page) : 1, 
-      limit: limit ? parseInt(limit) : 10 
+    const pagination = {
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 10
     };
-    
+
     const result = await taskService.getAllTaskStatuses(filters, pagination);
     res.json({
       statuses: result.rows,
@@ -191,11 +204,11 @@ export const getTaskComments = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { page, limit } = req.query;
-    const pagination = { 
-      page: page ? parseInt(page) : 1, 
-      limit: limit ? parseInt(limit) : 10 
+    const pagination = {
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 10
     };
-    
+
     const result = await taskService.getTaskComments(taskId, pagination);
     res.json({
       comments: result.rows,
@@ -250,22 +263,23 @@ export default {
   // Main task controllers
   createTask,
   getTasks,
+  getTaskDetails,
   getTaskById,
   updateTask,
   deleteTask,
-  
+
   // Task status controllers
   createTaskStatus,
   getTaskStatuses,
   getTaskStatusById,
   updateTaskStatus,
   deleteTaskStatus,
-  
+
   // Task CC member controllers
   createTaskCcMember,
   getTaskCcMembers,
   deleteTaskCcMember,
-  
+
   // Task comment controllers
   createTaskComment,
   getTaskComments,

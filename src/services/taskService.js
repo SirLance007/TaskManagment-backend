@@ -9,17 +9,16 @@ class TaskService {
     return await Task.create(taskData);
   }
 
-  async getAllTasks(filters = {}, pagination = {}, userId) {
+  async getAllTasks(filters = {}, pagination = {}) {
+    {console.log("Fuction executing" )};
     const { page = 1, limit = 10 } = pagination;
-    const { status, priority, assignee_id, type } = filters;
+    const { status, priority, type } = filters;
 
     const whereClause = {};
 
     if (status) whereClause.status = status;
     if (priority) whereClause.priority = priority;
-    if (assignee_id) whereClause.assignee_id = assignee_id;
     if (type) whereClause.type = type;
-    if (userId) whereClause.created_by = userId;
 
     const tasks = await Task.findAll({
       where: whereClause,
@@ -29,19 +28,13 @@ class TaskService {
         {
           model: User,
           as: 'assignee',
-          attributes: ['id', 'name', 'email']
+          attributes: ['user_id', 'name', 'email']
         }
       ]
     });
 
     const totalCount = await Task.count({
       where: whereClause
-    });
-
-    const assignedCount = await Task.count({
-      where: {
-        assignee_id: userId
-      }
     });
 
     return {
@@ -51,9 +44,27 @@ class TaskService {
         totalPages: Math.ceil(totalCount / limit),
         totalItems: totalCount,
         itemsPerPage: limit
-      },
-      assignedCount
+      }
     };
+  }
+
+  async getTaskDetails(taskId) {
+    return await Task.findByPk(taskId, {
+      include: [
+        { model: User, as: 'assignee', attributes: ['user_id', 'name', 'email'] },
+        { model: User, as: 'Creator', attributes: ['user_id', 'name', 'email'] },
+        { model: TaskStatus, attributes: ['status_id', 'type', 'status_name'] },
+        {
+          model: Comment,
+          include: [{ model: User, attributes: ['user_id', 'name', 'email'] }],
+          order: [['created_at', 'DESC']]
+        },
+        {
+          model: TaskCcMember,
+          include: [{ model: User, attributes: ['user_id', 'name', 'email'] }]
+        }
+      ]
+    });
   }
 
   async getTaskById(taskId) {

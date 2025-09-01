@@ -4,6 +4,7 @@ const defineUser = (sequelize) => {
   const User = sequelize.define(
     "User",
     {
+      // implement dealer id
       user_id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
       name: { type: DataTypes.STRING(255), allowNull: false },
       email: { type: DataTypes.STRING(255), allowNull: false, unique: true },

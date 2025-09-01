@@ -69,4 +69,7 @@ router.put("/:id", taskController.updateTask);
 // Delete task
 router.delete("/:id", taskController.deleteTask);
 
+// Get Task details
+router.get("/:taskId/details" , taskController.getTaskDetails);
+
 export default router;
