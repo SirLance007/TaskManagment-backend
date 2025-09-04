@@ -8,7 +8,7 @@ const defineTask = (sequelize) => {
       type: { type: DataTypes.ENUM("Task","Ticket"), allowNull: false },
       title: { type: DataTypes.STRING(255), allowNull: false },
       description: { type: DataTypes.STRING(500) },
-      priority: { type: DataTypes.ENUM("Low","Medium","High","Critical"), allowNull: false },
+      priority: { type: DataTypes.ENUM("Low","Medium","High"), allowNull: false },
       status: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
       assignee_id: { type: DataTypes.INTEGER, allowNull: true },
       due_date: { type: DataTypes.DATEONLY },

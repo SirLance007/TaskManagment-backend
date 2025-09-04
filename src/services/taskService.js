@@ -28,8 +28,14 @@ class TaskService {
         {
           model: User,
           as: 'assignee',
-          attributes: ['user_id', 'name', 'email']
-        }
+          attributes: ['user_id', 'name']
+        },
+        { model: TaskCcMember,
+          attributes: ['id' , 'user_id']
+        },
+        { model: Comment,
+          attributes: ['comment_id']
+        },
       ]
     });
 
@@ -204,6 +210,43 @@ class TaskService {
     });
   }
 
+  async createTaskCcMembersBulk(taskId, userIds = []) {
+    const task = await Task.findByPk(taskId);
+    if (!task) throw new Error('Task not found');
+
+    // Validate users exist
+    const uniqueUserIds = [...new Set(userIds.map((id) => parseInt(id)))].filter(Boolean);
+    if (uniqueUserIds.length === 0) return [];
+
+    const users = await User.findAll({ where: { user_id: uniqueUserIds } });
+    const foundIds = users.map((u) => u.user_id);
+    if (foundIds.length === 0) return [];
+
+    // Filter out any already-associated CCs
+    const existing = await TaskCcMember.findAll({
+      where: { task_id: taskId, user_id: foundIds }
+    });
+    const existingIds = new Set(existing.map((e) => e.user_id));
+
+    const toCreate = foundIds
+      .filter((id) => !existingIds.has(id))
+      .map((user_id) => ({ task_id: taskId, user_id }));
+
+    if (toCreate.length === 0) {
+      return await TaskCcMember.findAll({
+        where: { task_id: taskId },
+        include: [{ model: User, attributes: ['user_id', 'name', 'email'] }]
+      });
+    }
+
+    await TaskCcMember.bulkCreate(toCreate);
+
+    return await TaskCcMember.findAll({
+      where: { task_id: taskId },
+      include: [{ model: User, attributes: ['user_id', 'name', 'email'] }]
+    });
+  }
+
   async getTaskCcMembers(taskId) {
     const task = await Task.findByPk(taskId);
     if (!task) throw new Error('Task not found');
@@ -238,7 +281,7 @@ class TaskService {
 
     const comment = await Comment.create({ ...commentData, task_id: taskId });
 
-    return await Comment.findByPk(comment.comment_id, {
+    return await Comment.findByPk(comment.id, {
       include: [{ model: User, attributes: ['user_id', 'name', 'email'] }]
     });
   }

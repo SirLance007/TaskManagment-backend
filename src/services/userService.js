@@ -44,8 +44,7 @@ class UserService {
       where: whereClause,
       limit: limit,
       offset: offset,
-      attributes: { exclude: ['password'] },
-      order: [['created_at', 'DESC']]
+      attributes: { exclude: ['password' , 'email' , 'created_at'] },
     });
   }
 
