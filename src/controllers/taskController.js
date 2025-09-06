@@ -187,18 +187,6 @@ export const deleteTaskCcMember = async (req, res) => {
   }
 };
 
-export const createTaskCcMembersBulk = async (req, res) => {
-  try {
-    const { taskId } = req.params;
-    const { user_ids = [] } = req.body;
-    const ccMembers = await taskService.createTaskCcMembersBulk(taskId, user_ids);
-    res.status(201).json(ccMembers);
-  } catch (err) {
-    console.error("Error creating task CC members (bulk):", err);
-    res.status(400).json({ error: err.message });
-  }
-};
-
 // ==================== TASK COMMENT CONTROLLERS ====================
 
 export const createTaskComment = async (req, res) => {
@@ -291,7 +279,6 @@ export default {
   createTaskCcMember,
   getTaskCcMembers,
   deleteTaskCcMember,
-  createTaskCcMembersBulk,
 
   // Task comment controllers
   createTaskComment,

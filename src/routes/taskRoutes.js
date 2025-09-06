@@ -27,9 +27,6 @@ router.delete("/status/:id", taskController.deleteTaskStatus);
 // Add CC to a task
 router.post("/:taskId/cc", taskController.createTaskCcMember);
 
-// Add CC members in bulk to a task
-router.post("/:taskId/cc/bulk", taskController.createTaskCcMembersBulk);
-
 // Get all CC members for a task
 router.get("/:taskId/cc", taskController.getTaskCcMembers);
 
